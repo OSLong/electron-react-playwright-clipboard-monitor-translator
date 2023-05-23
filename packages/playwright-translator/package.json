@@ -1,0 +1,16 @@
+{
+  "name": "playwright-translator",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "playwright": "^1.33.0",
+    "typescript": "^5.0.4"
+  }
+}

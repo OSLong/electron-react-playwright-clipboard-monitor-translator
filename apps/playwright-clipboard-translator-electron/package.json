@@ -1,0 +1,44 @@
+{
+  "name": "playwright-clipboard-translator-electron",
+  "version": "1.0.0",
+  "description": "Playwright Clipboard JP -> Ch Translator",
+  "main": "js-electron/app.js",
+  "types": "dist/app.d.ts",
+  "scripts": {
+   
+    "build": "rm -rf js-electron && rollup -c rollup.config.js",
+    "start": "electron --disable-gpu js-electron/app.js",
+
+    "build:platforms": "npm run build && electron-builder --linux --win"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.1",
+    "@types/electron": "^1.6.10",
+    "asar": "^3.2.0",
+    "electron": "24.3.1",
+    "electron-builder": "^23.6.0",
+    "nodemon": "^2.0.22",
+    "rollup": "^3.22.0",
+    "typescript": "^5.0.4"
+  },
+  "dependencies": {
+    "playwright": "^1.34.0",
+    "playwright-translator": "^1.0.0",
+    "rxjs": "^7.8.1"
+  },
+  "build": {
+    "appId": "my.sl.electron-translator",
+    "files": [
+      "./public/**/*",
+      "./js-electron/**/*",
+      "./node_modules/**/*"
+    ],
+    "artifactName": "electron-translator",
+
+    "win": {
+      "target": ["portable", "nsis"]
+    }
+  }
+}

@@ -1,0 +1,24 @@
+.wrapper {
+    background: rgba(0, 128, 0, 0.5);
+    flex-grow: 1;
+    overflow-y: scroll;
+    overflow-x: hidden;
+} 
+
+.translateContainer {
+    background-color: greenyellow;
+    color: white;
+    margin: 10px
+}
+
+.translateSrc {
+    background: green;
+    padding: 10px;
+}
+
+.translateResult {
+    margin-top: 5px;
+    font-size: 16pt;
+    padding: 10px;
+    color: black;
+}

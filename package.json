@@ -1,0 +1,20 @@
+{
+  "name": "electron-playwright-clipboard-monitor-translator-root",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {    
+    "build:all": "npm --workspaces run build",
+    "copy:react-dist": "rm -rf apps/playwright-clipboard-translator-electron/public && cp -r apps/playwright-clipboard-translator-react/build apps/playwright-clipboard-translator-electron/public",
+    "build:platforms": "npm -w playwright-clipboard-translator-electron run build:platforms",
+    "copy:platforms": "rm -rf dist && cp -r apps/playwright-clipboard-translator-electron/dist dist" ,
+
+    "build": "npm run build:all && npm run copy:react-dist && npm run build:platforms&& npm run copy:platforms"
+  },
+  "author": "SL",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ]
+}
