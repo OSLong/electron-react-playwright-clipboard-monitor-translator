@@ -12,7 +12,7 @@ export abstract class BaseTranslator{
     }
 
     async reloadPage(){
-        await this.page.reload({waitUntil: 'domcontentloaded'})
+        await this.page.reload({waitUntil: 'domcontentloaded'}).catch(error => console.error("Error : ",error))
     }
 
     async init(){
@@ -30,4 +30,8 @@ export abstract class BaseTranslator{
             }, ms);
         })
     }    
+
+    close(){
+        return this.page.close({ runBeforeUnload: false })
+    }
 }

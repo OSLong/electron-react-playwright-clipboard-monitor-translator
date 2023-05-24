@@ -3,7 +3,8 @@ import React, { useCallback, useState } from 'react'
 
 interface AppContextValue {
     srcText: string,
-    resultList: string[]
+    resultList: string[],
+    isIniting: boolean
 }
 
 const Context = React.createContext<AppContextValue | undefined>(undefined)
@@ -11,10 +12,11 @@ const Context = React.createContext<AppContextValue | undefined>(undefined)
 export function AppProvider(props: React.PropsWithChildren) {
     const [srcText, setSrcText] = useState("")
     const [resultList, setResultList] = useState<string[]>([])
-
+    const [isIniting, setIsIniting] = useState<boolean>(true)
     const contextvalues: AppContextValue = {
         srcText,
-        resultList
+        resultList,
+        isIniting
     }
 
     
@@ -32,6 +34,9 @@ export function AppProvider(props: React.PropsWithChildren) {
 
         window.electron_ipc.handle_text_for_translate_add(onSrcTextAdded)
         window.electron_ipc.handle_translate_response(onResultResponse)
+        window.electron_ipc.on_init_finish(() => {
+            setIsIniting(false)
+        })
 
         // window.electron_ipc.handle_translate_response((result: string) => {
         //     console.log("Resposne data back ", result)

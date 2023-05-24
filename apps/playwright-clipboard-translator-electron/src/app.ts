@@ -4,7 +4,7 @@ import { concatMap, from, interval, map, of, retry, Subject, switchMap } from 'r
 import * as RxClipboardListener from './clipboard-listener'
 import { BaseTranslator ,EmptyTranslator,PlaywrightGoogleTranslator, PlaywrightBaiduTranslator, PlaywrightYoudaoTranslator, PlaywrightDeepLTranslator } from 'playwright-translator'
 import Playwright, { Browser, errors } from 'playwright'
-import { EVENT_TRANSLATE_ADDED, EVENT_TRANSLATE_RESULT_RESPONSE } from './constants'
+import { EVENT_INIT_FINISH, EVENT_TRANSLATE_ADDED, EVENT_TRANSLATE_RESULT_RESPONSE } from './constants'
 import url from 'url'
 import path from 'path'
 
@@ -15,28 +15,30 @@ interface TranslatorBuilder {
 }
 
 let playwrightBrowser: Browser | undefined = undefined
+let playwrightServices : Array<BaseTranslator> = [] 
 
 async function setupEvents(win: BrowserWindow) {
-    RxClipboardListener.startListening()
     
     const browser = await Playwright.chromium.launch({ headless: true, devtools: false})
-
-    playwrightBrowser = browser
 
     const translateServices: Array<BaseTranslator> = [
         new PlaywrightGoogleTranslator(browser),
         new PlaywrightYoudaoTranslator(browser),
         new PlaywrightDeepLTranslator(browser),
         new PlaywrightBaiduTranslator(browser),
-
     ]
     await Promise.all(translateServices.map( (translator) => {
         return translator.init().catch((error)=> {
             console.error("Init Transaltor Error : ", error)
         })
     }))
+
+    playwrightServices = translateServices
+    playwrightBrowser = browser
+    
     console.log("Clipboard Listening ........ ")
 
+    RxClipboardListener.startListening()
     RxClipboardListener
         .ClipboardListenerObservable
         .pipe(
@@ -70,7 +72,9 @@ async function setupEvents(win: BrowserWindow) {
         .subscribe((builder) => {
             win.webContents.send(EVENT_TRANSLATE_RESULT_RESPONSE, builder.result)
         })
-    return 
+
+    win.webContents.send(EVENT_INIT_FINISH)
+
 
 
 }
@@ -109,26 +113,49 @@ app.whenReady().then(async () => {
     window = createWindow()
    
     window.show()
-    window.on('ready-to-show', () => {
-        setupEvents(window!)
-    })
 
-    window.on('close', () => {
+    console.log("Show Finish ..")
+
+    await setupEvents(window!)
+
+    app.on('window-all-closed', async () => {
+        console.log("Run Before Quit ...")
+    // })
+    // window.on('close', async () => {
         window = undefined
+
+        console.log("Stop Listening Clipboard ... ")
+        RxClipboardListener.stopListening()
+
+        console.log("Service Page Closing....")
+        await Promise.all(playwrightServices.map((service) => {
+            return service.close()
+        }))
+        console.log("Service Page Closed")
+
+
+        console.log("Playwright Quiting ... ")
+        await playwrightBrowser?.close()
+        
+        console.log("App Quiting ...")
         app.quit()
+
+        if (process.platform !== 'darwin') {
+            console.log('if you see this message - all windows was closed')
+            app.quit()
+        } 
+        console.log("App Closed")
     })
 })
 
 
-app.on('window-all-closed',async () => {
-    RxClipboardListener.stopListening()
+// app.on('window-all-closed',async () => {
+//     console.log("Run Window All Close...")
+//     // On macOS it is common for applications and their menu bar
+//     // to stay active until the user quits explicitly with Cmd + Q
+//     if (process.platform !== 'darwin') {
+//       console.log('if you see this message - all windows was closed')
+//       app.quit()
 
-    await playwrightBrowser?.close()
-
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-      console.log('if you see this message - all windows was closed')
-      app.quit()
-    } 
-  })
+//     } 
+//   })

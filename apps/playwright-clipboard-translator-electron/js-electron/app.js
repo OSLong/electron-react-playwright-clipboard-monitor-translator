@@ -59,13 +59,13 @@ const ClipboardListenerObservable = ClipboardBehaviorSubject.asObservable();
 
 const EVENT_TRANSLATE_ADDED = 'event-translate-added';
 const EVENT_TRANSLATE_RESULT_RESPONSE = 'event-translate-result-response';
+const EVENT_INIT_FINISH = "event-init-finish";
 
 let playwrightBrowser = undefined;
+let playwrightServices = [];
 function setupEvents(win) {
     return __awaiter(this, void 0, void 0, function* () {
-        startListening();
         const browser = yield Playwright.chromium.launch({ headless: true, devtools: false });
-        playwrightBrowser = browser;
         const translateServices = [
             new playwrightTranslator.PlaywrightGoogleTranslator(browser),
             new playwrightTranslator.PlaywrightYoudaoTranslator(browser),
@@ -77,7 +77,10 @@ function setupEvents(win) {
                 console.error("Init Transaltor Error : ", error);
             });
         }));
+        playwrightServices = translateServices;
+        playwrightBrowser = browser;
         console.log("Clipboard Listening ........ ");
+        startListening();
         ClipboardListenerObservable
             .pipe(rxjs.switchMap((text) => {
             win.webContents.send(EVENT_TRANSLATE_ADDED, text);
@@ -104,7 +107,7 @@ function setupEvents(win) {
             .subscribe((builder) => {
             win.webContents.send(EVENT_TRANSLATE_RESULT_RESPONSE, builder.result);
         });
-        return;
+        win.webContents.send(EVENT_INIT_FINISH);
     });
 }
 function createWindow() {
@@ -132,21 +135,37 @@ let window = undefined;
 electron.app.whenReady().then(() => __awaiter(void 0, void 0, void 0, function* () {
     window = createWindow();
     window.show();
-    window.on('ready-to-show', () => {
-        setupEvents(window);
-    });
-    window.on('close', () => {
+    console.log("Show Finish ..");
+    yield setupEvents(window);
+    electron.app.on('window-all-closed', () => __awaiter(void 0, void 0, void 0, function* () {
+        console.log("Run Before Quit ...");
+        // })
+        // window.on('close', async () => {
         window = undefined;
+        console.log("Stop Listening Clipboard ... ");
+        stopListening();
+        console.log("Service Page Closing....");
+        yield Promise.all(playwrightServices.map((service) => {
+            return service.close();
+        }));
+        console.log("Service Page Closed");
+        console.log("Playwright Quiting ... ");
+        yield (playwrightBrowser === null || playwrightBrowser === void 0 ? void 0 : playwrightBrowser.close());
+        console.log("App Quiting ...");
         electron.app.quit();
-    });
+        if (process.platform !== 'darwin') {
+            console.log('if you see this message - all windows was closed');
+            electron.app.quit();
+        }
+        console.log("App Closed");
+    }));
 }));
-electron.app.on('window-all-closed', () => __awaiter(void 0, void 0, void 0, function* () {
-    stopListening();
-    yield (playwrightBrowser === null || playwrightBrowser === void 0 ? void 0 : playwrightBrowser.close());
-    // On macOS it is common for applications and their menu bar
-    // to stay active until the user quits explicitly with Cmd + Q
-    if (process.platform !== 'darwin') {
-        console.log('if you see this message - all windows was closed');
-        electron.app.quit();
-    }
-}));
+// app.on('window-all-closed',async () => {
+//     console.log("Run Window All Close...")
+//     // On macOS it is common for applications and their menu bar
+//     // to stay active until the user quits explicitly with Cmd + Q
+//     if (process.platform !== 'darwin') {
+//       console.log('if you see this message - all windows was closed')
+//       app.quit()
+//     } 
+//   })

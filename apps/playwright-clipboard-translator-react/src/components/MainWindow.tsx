@@ -5,6 +5,15 @@ import { useAppContext } from '../providers/AppProvider'
 export default function MainWindow(props: React.PropsWithChildren){
     const appContext = useAppContext()
     
+    if ( appContext.isIniting){
+        return (
+            <div className={styles.wrapper}>
+                <div className={styles.translateContainer}>
+                    <h1>Initializing ....</h1>
+                </div>
+            </div>
+        ) 
+    }
 
     return (
         <div className={styles.wrapper}>

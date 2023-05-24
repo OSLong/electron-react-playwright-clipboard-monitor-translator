@@ -1,5 +1,5 @@
 import  { contextBridge, ipcRenderer } from 'electron'
-import { EVENT_TRANSLATE_RESULT_RESPONSE, EVENT_TRANSLATE_ADDED } from  '@src/constants'
+import { EVENT_TRANSLATE_RESULT_RESPONSE, EVENT_TRANSLATE_ADDED, EVENT_INIT_FINISH } from  '@src/constants'
 import { IpcRendererEvent } from 'electron'
 
 type IpcRendererListener =  ( event: IpcRendererEvent,  ...args: any[]) => void
@@ -15,7 +15,14 @@ const electron_ipc_handler_expose = {
 
     handle_translate_response: (callback: IpcRendererListener) => ipcRenderer.on(EVENT_TRANSLATE_RESULT_RESPONSE, callback),
 
-    off_translate_response: () => ipcRenderer.removeAllListeners(EVENT_TRANSLATE_RESULT_RESPONSE)
+    off_translate_response: () => ipcRenderer.removeAllListeners(EVENT_TRANSLATE_RESULT_RESPONSE),
+
+    on_init_finish: (callback: IpcRendererListener) => {
+        ipcRenderer.on(EVENT_INIT_FINISH, (...args) => {
+            callback(...args)
+            ipcRenderer.removeAllListeners(EVENT_INIT_FINISH)
+        })
+    }
      
     // removeAllListener: () => ipcRenderer.removeAllListeners
 }

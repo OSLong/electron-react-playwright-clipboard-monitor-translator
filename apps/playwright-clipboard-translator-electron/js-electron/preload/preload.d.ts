@@ -6,6 +6,7 @@ declare const electron_ipc_handler_expose: {
     off_handle_text_for_translate_added: () => Electron.IpcRenderer;
     handle_translate_response: (callback: IpcRendererListener) => Electron.IpcRenderer;
     off_translate_response: () => Electron.IpcRenderer;
+    on_init_finish: (callback: IpcRendererListener) => void;
 };
 export type ElectronIPCRendererExpose = typeof electron_ipc_handler_expose;
 export {};
