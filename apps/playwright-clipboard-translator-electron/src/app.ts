@@ -20,12 +20,12 @@ let playwrightServices : Array<BaseTranslator> = []
 async function setupEvents(win: BrowserWindow) {
     
     const browser = await Playwright.chromium.launch({ headless: true, devtools: false})
-
+    const context = await browser.newContext()
     const translateServices: Array<BaseTranslator> = [
-        new PlaywrightGoogleTranslator(browser),
-        new PlaywrightYoudaoTranslator(browser),
-        new PlaywrightDeepLTranslator(browser),
-        new PlaywrightBaiduTranslator(browser),
+        new PlaywrightGoogleTranslator(context),
+        new PlaywrightYoudaoTranslator(context),
+        new PlaywrightDeepLTranslator(context),
+        new PlaywrightBaiduTranslator(context),
     ]
     await Promise.all(translateServices.map( (translator) => {
         return translator.init().catch((error)=> {

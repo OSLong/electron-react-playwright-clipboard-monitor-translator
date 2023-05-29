@@ -1,12 +1,12 @@
-import { Browser, BrowserType, Page, chromium } from 'playwright'
+import { Browser, BrowserContext, BrowserType, Page, chromium } from 'playwright'
 
 export abstract class BaseTranslator{
     protected page!: Page
 
-    protected outputTimeout = 5 * 1000 
+    protected outputTimeout = 10 * 1000 
 
     constructor(
-        protected browser: Browser
+        protected browser: BrowserContext
         ){
         
     }

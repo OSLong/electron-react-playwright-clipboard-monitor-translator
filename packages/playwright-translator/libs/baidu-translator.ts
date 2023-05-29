@@ -13,10 +13,15 @@ export class PlaywrightBaiduTranslator extends BaseTranslator {
     }
 
     async translate(text: string): Promise<string> {
+        const clearbtns = await this.page.$$('a.textarea-clear-btn')
+        if (clearbtns.length){
+            await Promise.all(clearbtns.map((btn) => btn.click()))
+        }
+
         const source_dom = await this.page.locator('textarea#baidu_translate_input')
 
         
-        await source_dom.type(text, {delay: 10})
+        await source_dom.type(text, {delay: 50})
         
         const error_prompt = await this.page.$('div#long-text-prompt-wrap p', ).then(element => element?.textContent())
         if ( error_prompt ){
